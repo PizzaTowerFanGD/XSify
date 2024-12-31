@@ -17,42 +17,62 @@ std::string createXLstring(float levelLengthMinutes) {
     float xxlScaling = Mod::get()->getSettingValue<double>("xxl-scaling");
     int lengthExponent = logBaseN(levelLengthMinutes / 2, xxlScaling) + 1;
 
-    // New feature for short levels
     float levelLengthSeconds = levelLengthMinutes * 60.0f;
+
+    // Define the new level length categories
     if (levelLengthSeconds < 3.0f) {
         XLstring << "XXXXS";
-        return XLstring.str();
-    } else if (levelLengthSeconds < 7.0f) {
+    } else if (levelLengthSeconds < 5.0f) {
         XLstring << "XXXS";
-        return XLstring.str();
-    } else if (levelLengthSeconds < 11.0f) {
+    } else if (levelLengthSeconds < 7.0f) {
         XLstring << "XXS";
-        return XLstring.str();
-    } else if (levelLengthSeconds < 15.0f) {
+    } else if (levelLengthSeconds < 10.0f) {
         XLstring << "XS";
-        return XLstring.str();
-    }
-
-    if (usingPowerNotation && lengthExponent > maximumXs) {
-        XLstring << "X^" << std::to_string(lengthExponent);
-    } else {
-        if (lengthExponent > maximumXs) {
-            lengthExponent = maximumXs;
+    } else if (levelLengthSeconds < 15.0f) {
+        XLstring << "Tiny";
+    } else if (levelLengthSeconds < 20.0f) {
+        XLstring << "Tiny+";
+    } else if (levelLengthSeconds < 25.0f) {
+        XLstring << "Short-";
+    } else if (levelLengthSeconds < 30.0f) {
+        XLstring << "Short";
+    } else if (levelLengthSeconds < 45.0f) {
+        XLstring << "Short+";
+    } else if (levelLengthSeconds < 60.0f) {
+        XLstring << "Medium-";
+    } else if (levelLengthSeconds < 90.0f) {
+        XLstring << "Medium";
+    } else if (levelLengthSeconds < 120.0f) {
+        XLstring << "Medium+";
+    } else if (levelLengthSeconds < 150.0f) {
+        XLstring << "Long-";
+    } else if (levelLengthSeconds < 180.0f) {
+        XLstring << "Long";
+    } else if (levelLengthSeconds < 240.0f) {
+        XLstring << "Long+";
+    } 
+if (levelLengthSeconds < 240.0f) {
+        return;
+} else {
+        if (usingPowerNotation && lengthExponent > maximumXs) {
+            XLstring << "X^" << std::to_string(lengthExponent);
+        } else {
+            if (lengthExponent > maximumXs) {
+                lengthExponent = maximumXs;
+            }
+            for (int i = 0; i < lengthExponent; i++) {
+                if (i % 10 == 0 && i != 0) XLstring << "\n";
+                XLstring << "X";
+            }
         }
-        for (int i = 0; i < lengthExponent; i++) {
-            if (i % 10 == 0 && i != 0) XLstring << "\n";
-            XLstring << "X";
+        XLstring << "L";
+
+        if (usingXXLplus) {
+            float XXLPlusLength = pow(xxlScaling, lengthExponent) + pow(xxlScaling, lengthExponent - 1);
+            if (levelLengthMinutes >= XXLPlusLength) {
+                XLstring << "+";
+            }
         }
-    }
-    XLstring << "L";
-
-    if (!usingXXLplus) {
-        return XLstring.str();
-    }
-
-    float XXLPlusLength = pow(xxlScaling, lengthExponent) + pow(xxlScaling, lengthExponent - 1);
-    if (levelLengthMinutes >= XXLPlusLength) {
-        XLstring << "+";
     }
 
     return XLstring.str();
@@ -94,9 +114,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
             float cvoltonLengthMinutes = timeForLevelString(m_level->m_levelString);
 
             Loader::get()->queueInMainThread([this, cvoltonLengthMinutes]() {
-                if (cvoltonLengthMinutes >= 2.0f) {
-                    modifyXLlabel(cvoltonLengthMinutes);
-                }
+                modifyXLlabel(cvoltonLengthMinutes);
                 this->release();
             });
         }).detach();
@@ -111,10 +129,6 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
         
         if (levelLengthMinutes <= 0.0f) {
             createXLlabelCvolton();
-            return;
-        }
-
-        if (levelLengthMinutes < 2.0f && levelLengthMinutes > 0.25f) {
             return;
         }
 
