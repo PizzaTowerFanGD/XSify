@@ -52,7 +52,7 @@ std::string createXLstring(float levelLengthMinutes) {
         XLstring << "Long+";
     } 
 if (levelLengthSeconds < 240.0f) {
-        return;
+        return XLstring.str();
 } else {
         if (usingPowerNotation && lengthExponent > maximumXs) {
             XLstring << "X^" << std::to_string(lengthExponent);
