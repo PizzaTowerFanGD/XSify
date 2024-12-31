@@ -114,7 +114,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
             return;
         }
 
-        if (levelLengthMinutes < 2.0f) {
+        if (levelLengthMinutes < 2.0f && levelLengthMinutes > 0.25f) {
             return;
         }
 
